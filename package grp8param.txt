@@ -1,0 +1,29 @@
+package cache_parameters;
+
+parameter SIZE_OF_ADDRESS = 32;
+parameter SIZE_OF_EACH_CACHE_LINE = 64;
+parameter CAPACITY = 2**23;
+parameter NUMBER_OF_WAYS = 8;
+
+parameter DATA_READ         = 0;
+parameter DATA_WRITE        = 1;
+parameter INST_READ         = 2;
+parameter SNOOP_INVALIDATE  = 3;
+parameter SNOOP_READ        = 4;
+parameter CLEAR_CACHE	    = 8;
+parameter PRINT_CACHE	    = 9;
+
+parameter M                 = 0;
+parameter E                 = 1;
+parameter S                 = 2;
+parameter I                 = 3; 
+
+parameter Cache_Hit         = 1;
+parameter Cache_Miss        = 0;
+
+typedef enum logic [2:0] {NOHIT, HIT, HITM} snoop_result;
+
+typedef enum logic [2:0] {READ, WRITE, INVALIDATE, RWIM} busopt;
+
+
+endpackage

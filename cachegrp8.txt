@@ -1,0 +1,72 @@
+import cache_parameters ::*;
+module cache;
+
+/***********CACHE_PARAMETERS************/
+
+logic [11 : 0]    Tag_Array    [13 : 0][7:0];
+logic [2 : 0]     LRU_Array    [13 : 0];
+logic [1 : 0]     State        [13 : 0][7: 0]; 
+
+/************ADDRESS BITS************/
+
+logic [5 : 0]    Byte_offset;
+logic [13: 0]    Index_Bits;
+logic [11: 0]    Tag_Bits;
+logic [7 : 0]    Ways; 
+logic [31: 0]    Evict_Addr;
+
+/************STATISTICS************/
+
+int reads;
+int writes;
+int cache_hits;
+int cache_misses;
+real hit_ratio;
+
+/*************Address division***************/
+
+logic [3:0] cmd;
+logic [31:0] addr;
+
+parameter BITS_FOR_BYTE_OFFSET = $clog2(SIZE_OF_EACH_CACHE_LINE);
+parameter BITS_FOR_INDEX       = $clog2(CAPACITY/(SIZE_OF_EACH_CACHE_LINE*NUMBER_OF_WAYS));
+parameter BITS_FOR_TAG         = SIZE_OF_ADDRESS - (BITS_FOR_BYTE_OFFSET+BITS_FOR_INDEX);
+
+assign Byte_offset = addr[(BITS_FOR_BYTE_OFFSET-1):0];
+assign Index_Bits  = addr[(BITS_FOR_BYTE_OFFSET+BITS_FOR_INDEX-1):BITS_FOR_BYTE_OFFSET];
+assign Tag_Bits    = addr[SIZE_OF_ADDRESS-1:(BITS_FOR_BYTE_OFFSET+BITS_FOR_INDEX)];
+
+
+  initial begin
+	if($value$plusargs("MODE=%s",mode)) begin
+		if(mode == "N") 		
+			$display("Normal Mode");
+		else if(mode == "S")
+			$display("Silent Mode");
+		else 
+			$display("No Mode Provided");
+	end
+
+	dm = $value$plusargs("DEBUG_MODE=%s",debug_mode);
+	if($value$plusargs("FILE_NAME=%s",file_name)) begin
+		fd = $fopen (file_name, "r");
+		while(!$feof(fd)) begin 
+			status=$fscanf (fd, "%d %h", cmd, addr); 
+			$display ("Sending command = %0d address = %0h", cmd, addr);
+		end
+		$fclose(fd);
+		hit_ratio = (cache_hits)/(cache_hits+cache_miss);	
+	end   
+    end
+
+always@(posedge eof) begin
+
+	$display("Total CPU reads    = %d", reads);
+	$display("Total CPU writes   = %d", writes);
+	$display("Total Cache hits   = %d", cache_hits);
+	$display("Total Cache Miss   = %d", cache_miss);
+	$display("Cache Hit Ratio    = %f", (cache_hits)/(cache_hits+cache_miss));
+
+end
+
+
